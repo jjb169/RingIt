@@ -8,6 +8,8 @@
 //MUST IMPORT Adafruit GFX - may come with above library
 //https://learn.adafruit.com/adafruit-led-backpack/0-54-alphanumeric-9b21a470-83ad-459c-af02-209d8d82c462
 
+#include <Keypad.h>
+
 //Mic input - pin 23 - A0
 int micIn = A0;
 //blue LED control - pin 24 - A1
@@ -25,8 +27,6 @@ int lockSw1 = 0;
 //lock it SW2 - pin 3 - D1
 int lockSw2 = 1;
 
-/* STEAL KEYPAD CODE FOR 4X3 FROM INTERNET WITH USE OF MATRIX AND STUFF */
-
 //speaker PWM output - pin 16 - D10
 int speakerOut = 10;
 //SD Card MOSI - pin 17 - D11
@@ -41,6 +41,23 @@ int score = 0;
 int timer = 10; 
 int rounds = 0;
 
+/* KEYPAD INFO AND ASSIGNMENTS */
+const byte ROWS = 4; 
+const byte COLS = 3; 
+
+char hexaKeys[ROWS][COLS] = {
+  {'1', '2', '3'},
+  {'4', '5', '6'},
+  {'7', '8', '9'},
+  {'*', '0', '#'}
+};
+
+byte rowPins[ROWS] = {4, 5, 15, 11}; 
+byte colPins[COLS] = {12, 13, 14}; 
+
+Keypad customKeypad = Keypad(makeKeymap(hexaKeys), rowPins, colPins, ROWS, COLS); 
+
+//setup function to assign pinModes
 void setup() 
 {
   //set pin modes  like below
@@ -54,48 +71,75 @@ void setup()
   pinMode(sdMosi, INPUT); //may need changing
   pinMode(sdMiso, INPUT); //may need changing
   pinMode(sdSck, INPUT); //may need changing
-  //NEED KEYPAD ASSIGNMENTS
 
-  
+  Serial.begin(9600);
 }
 
 
 //entry loop
 void loop() 
 {
+  //read character being pressed on keypad
+  char currKey = customKeypad.getKey();
+  
   //reset score, time, rounds
   score = 0;
   timer = 0;
   rounds = 0;
-  //if( * and & are presed)
-    //game()
+  if(currKey == '#')
+    game();
 }
 
 
 //main game method/loop
 void game()
 {
+  //for loop going to 99, break out and return if loss (?)
+  for(int i  = 0; i < 100; i++)
+  {
+    int num = 0; // = rand(0-3) idk how to generate a random number
+    //generate rand num 1 to 3
+    switch(num)
+    {
+      case 1:
+       //call function, if 1 returned, win, 0, fail (?)
+      break;
+      case 2:
+        //call function, if 1 returned, win, 0, fail (?)
+      break;
+      case 3:
+        //call function, if 1 returned, win, 0, fail (?)
+      break;
+    }
+  }
   //win or game over
-  //return
+  endGame();
+}
+
+
+//end game func for display/sound/light
+void endGame()
+{
+
 }
 
 
 //method for dial
-void dial()
+int dial()
 {
 
 }
 
 
 //method for lock
-void lock()
+int lock()
 {
 
 }
 
 
 //method for answer
-void answer()
+int answer()
 {
 
 }
