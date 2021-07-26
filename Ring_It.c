@@ -36,6 +36,10 @@ int sdMiso = 12;
 //SD Card SCK - pin 19 - D13
 int sdSck = 13;
 
+//score, timer, and rounds
+int score = 0;
+int timer = 10; 
+int rounds = 0;
 
 void setup() 
 {
@@ -51,9 +55,52 @@ void setup()
   pinMode(sdMiso, INPUT); //may need changing
   pinMode(sdSck, INPUT); //may need changing
   //NEED KEYPAD ASSIGNMENTS
+
+  
 }
 
+
+//entry loop
 void loop() 
+{
+  //reset score, time, rounds
+  score = 0;
+  timer = 0;
+  rounds = 0;
+  //if( * and & are presed)
+    //game()
+}
+
+
+//main game method/loop
+void game()
+{
+  //win or game over
+  //return
+}
+
+
+//method for dial
+void dial()
 {
 
 }
+
+
+//method for lock
+void lock()
+{
+
+}
+
+
+//method for answer
+void answer()
+{
+
+}
+
+
+
+
+
