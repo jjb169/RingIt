@@ -9,6 +9,7 @@
 //https://learn.adafruit.com/adafruit-led-backpack/0-54-alphanumeric-9b21a470-83ad-459c-af02-209d8d82c462
 
 #include <Keypad.h>
+#include <Adafruit_LEDBackpack.h>
 
 //Mic input - pin 23 - A0
 int micIn = A0;
@@ -36,10 +37,16 @@ int sdMiso = 12;
 //SD Card SCK - pin 19 - D13
 int sdSck = 13;
 
-//score, timer, and rounds
+//score, timer, rounds, and loss boolean
 int score = 0;
-int timer = 10; 
-int rounds = 0;
+unsigned long currTime = 0;
+int timeOut = 8; //start at 8 second timer 
+int decreaseTime = 0.05; //decrease timer by 0.05 seconds every successful round
+//int rounds = 0;
+bool loss = false;
+
+//alphanumeric display var
+Adafruit_AlphaNum4 alpha4 = Adafruit_AlphaNum4();
 
 /* KEYPAD INFO AND ASSIGNMENTS */
 const byte ROWS = 4; 
@@ -82,10 +89,11 @@ void loop()
   //read character being pressed on keypad
   char currKey = customKeypad.getKey();
   
-  //reset score, time, rounds
+  //reset score, time, rounds, loss boolean
   score = 0;
-  timer = 0;
-  rounds = 0;
+  timeOut = 8;
+  //rounds = 0;
+  loss = false;
   if(currKey == '#')
     game();
 }
@@ -102,8 +110,22 @@ void game()
     switch(num)
     {
       case 1:
-       //call function, if 1 returned, win, 0, fail (?)
-      break;
+        //call function, if 1 returned, win, 0, fail (?)
+
+        //call dial it function, returning a bool true for losing, false for winning
+        loss = dial();
+        //check loss bool
+        if(loss)
+        {
+          endGame();
+          return;
+        }
+        else
+        {
+          score++;
+        }
+       
+       break;
       case 2:
         //call function, if 1 returned, win, 0, fail (?)
       break;
@@ -127,7 +149,29 @@ void endGame()
 //method for dial
 int dial()
 {
+  //generate the 4 random numbers
+  int randOne = random(0, 10); //generates a random number 0 to 9
+  int randTwo = random(0, 10); //generates a random number 0 to 9
+  int randThree = random(0, 10); //generates a random number 0 to 9
+  int randFour = random(0, 10); //generates a random number 0 to 9
 
+  
+
+  //grab the time at which this task is starting
+  currTime = millis() / 1000.0; //millimeters, so going to divide by 1000
+  int gameOver = currTime + timeOut; //2 + 8 -> 10
+
+  //just stay in a while loop until the task is completed, or the user fails
+  while(true)
+  {
+
+    //update curr time
+    currTime = millis() / 1000.0; //millimeters, so going to divide by 1000
+    if(currTime > gameOver) //check if time elapsed for this task is > the timeout
+    {
+      return true; //game over 
+    }
+  }
 }
 
 
@@ -147,4 +191,26 @@ int answer()
 
 
 
+bool check_others(int func)
+{
+  if(func != 1) //dial it check
+  {
+    //read character being pressed on keypad
+    char currKey = customKeypad.getKey();
 
+    //check if a key was pressed
+    if(currKey != NO_KEY)
+      return true; //if key pressed when it shouldn't be, return true, meaning the game is lost
+  }
+
+  if(func != 2) //lock it check
+  {
+    
+  }
+
+  if(func != 3)
+  {
+    
+  }
+
+}
