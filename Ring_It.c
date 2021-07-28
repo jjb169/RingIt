@@ -128,17 +128,35 @@ void game()
        break;
       case 2:
         //call function, if 1 returned, win, 0, fail (?)
-
+        digitalWrite(redOut, HIGH);
+        bool light = true;
         loss = lock();
         //check loss bool
         if(loss)
         {
+          digitalWrite(redOut, LOW);//turn light off
+          //light
           endGame();
           return;
         }
         else
         {
           score++;
+          //set to flick the LED on and off
+          for(int i=0;i<10;i++)
+          {
+            //if light is on, turn it off and switch the bool
+            if(light == true)
+            {
+               digitalWrite(redOut, LOW);
+               light = false;
+            }
+            else
+            {
+              digitalWrite(redOut, HIGH);
+              light = true;
+            }
+          }
         }
         
       break;
@@ -155,7 +173,13 @@ void game()
 //end game func for display/sound/light
 void endGame()
 {
+  // turn on purple light to indicate failure 
 
+  digitalWrite(redOut, HIGH);
+  digitalWrite(blueOut, HIGH);
+
+  // 
+ 
 }
 
 
@@ -226,8 +250,6 @@ int answer()
 {
 
 }
-
-
 
 
 bool check_others(int func)
