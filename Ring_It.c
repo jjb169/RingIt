@@ -192,18 +192,14 @@ int dial()
   int randTwo = random(0, 10); //generates a random number 0 to 9
   int randThree = random(0, 10); //generates a random number 0 to 9
   int randFour = random(0, 10); //generates a random number 0 to 9
-
   //need these random ints in char format to display properly
-  char charOne = (char) randOne;
-  char charTwo = (char) randTwo;
-  char charThree = (char) randThree;
-  char charFour = (char) randFour;
+  char randChars[4] = {(char) randOne, (char) randTwo, (char) randThree, (char) randFour};
 
   //put these numbers on the display
-  alpha4.writeDigitAscii(0, charOne);
-  alpha4.writeDigitAscii(1, charTwo);
-  alpha4.writeDigitAscii(2, charThree);
-  alpha4.writeDigitAscii(3, charFour);
+  alpha4.writeDigitAscii(0, randChars[0]);
+  alpha4.writeDigitAscii(1, randChars[1]);
+  alpha4.writeDigitAscii(2, randChars[2]);
+  alpha4.writeDigitAscii(3, randChars[3]);
   alpha4.writeDisplay(); //MUST CALL THIS TO WRITE TO DISPLAY
 
   //int to keep track of what digit is being pressed
@@ -220,45 +216,16 @@ int dial()
     //read character being pressed on keypad
     char currKey = customKeypad.getKey();
 
+    //check if currDigit >= 4, meaning task is done
+    if(currDigit >= 4)
+      return false; //task is done successfully
 
-    //check which button needs pressing and if its as expected
-    //digit 0
-    if(currDigit == 0)
-    {
-      //check if the correct key is pressed
-      if(currKey == charOne) //if correct key pressed
-        currDigit = 1; //move to next character
-      else if(currKey != NO_KEY) //if key other than expected was pressed
-        return true; //return true as the incorrect button was pressed
-    }
-    //digit 1
-    if(currDigit == 1)
-    {
-      //check if the correct key is pressed
-      if(currKey == charTwo) //if correct key pressed
-        currDigit = 2; //move to next character
-      else if(currKey != NO_KEY) //if key other than expected was pressed
-        return true; //return true as the incorrect button was pressed
-    }
-    //digit 2
-    if(currDigit == 2)
-    {
-      //check if the correct key is pressed
-      if(currKey == charThree) //if correct key pressed
-        currDigit = 3; //move to next character
-      else if(currKey != NO_KEY) //if key other than expected was pressed
-        return true; //return true as the incorrect button was pressed
-    }
-    //digit 3
-    if(currDigit == 3)
-    {
-      //check if the correct key is pressed
-      if(currKey == charFour) //if correct key pressed
-        return false; //USER COMPLETED THE DIAL IT TASK, QUIT OUT OF THIS LOOP WITH FALSE 
-      else if(currKey != NO_KEY) //if key other than expected was pressed
-        return true; //return true as the incorrect button was pressed
-    }
-
+    //check if the correct key is pressed
+    if(currKey == randChars[currDigit]) //if correct key pressed
+      currDigit++; //move to next character
+    else if(currKey != NO_KEY) //if key other than expected was pressed
+      return true; //return true as the incorrect button was pressed and game is lost
+    
     //update curr time
     currTime = millis() / 1000.0; //millimeters, so going to divide by 1000
     if(currTime > gameOver) //check if time elapsed for this task is > the timeout
