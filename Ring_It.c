@@ -123,7 +123,6 @@ void game()
         else
         {
           score++;
-          
         }
        
        break;
@@ -186,5 +185,32 @@ int lock()
 //method for answer
 int answer()
 {
+
+}
+
+
+
+
+bool check_others(int func)
+{
+  if(func != 1) //dial it check
+  {
+    //read character being pressed on keypad
+    char currKey = customKeypad.getKey();
+
+    //check if a key was pressed
+    if(currKey != NO_KEY)
+      return true; //if key pressed when it shouldn't be, return true, meaning the game is lost
+  }
+
+  if(func != 2) //lock it check
+  {
+    
+  }
+
+  if(func != 3)
+  {
+    
+  }
 
 }
