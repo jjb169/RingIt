@@ -129,6 +129,37 @@ void game()
        break;
       case 2:
         //call function, if 1 returned, win, 0, fail (?)
+        digitalWrite(redOut, HIGH);
+        bool light = true;
+        loss = lock();
+        //check loss bool
+        if(loss)
+        {
+          digitalWrite(redOut, LOW);//turn light off
+          //light
+          endGame();
+          return;
+        }
+        else
+        {
+          score++;
+          //set to flick the LED on and off
+          for(int i=0;i<10;i++)
+          {
+            //if light is on, turn it off and switch the bool
+            if(light == true)
+            {
+               digitalWrite(redOut, LOW);
+               light = false;
+            }
+            else
+            {
+              digitalWrite(redOut, HIGH);
+              light = true;
+            }
+          }
+        }
+        
       break;
       case 3:
         //call function, if 1 returned, win, 0, fail (?)
@@ -143,7 +174,13 @@ void game()
 //end game func for display/sound/light
 void endGame()
 {
+  // turn on purple light to indicate failure 
 
+  digitalWrite(redOut, HIGH);
+  digitalWrite(blueOut, HIGH);
+
+  // 
+ 
 }
 
 
@@ -235,7 +272,33 @@ int dial()
 //method for lock
 int lock()
 {
+  
+  currTime = millis() / 1000.0; //millimeters, so going to divide by 1000
+  int gameOver = currTime + timeOut; //2 + 8 -> 10
 
+  //just stay in a while loop until the task is completed, or the user fails
+  while(true)
+  {
+    int valSw1 = digitalRead(lockSw1);
+    int valSw2 = digitalRead(lockSw2);
+
+    if(valSw1 == 1 && valSw2 == 1)
+    {
+      return false;
+    }
+    if(check_others())
+    {
+      return true;//game over. The user performed the wrong task
+    }
+    //grab the time at which this task is starting
+    //update curr time
+    currTime = millis() / 1000.0; //millimeters, so going to divide by 1000
+    if(currTime > gameOver) //check if time elapsed for this task is > the timeout
+    {
+      return true; //game over 
+    }
+    
+  }
 }
 
 
@@ -244,8 +307,6 @@ int answer()
 {
 
 }
-
-
 
 
 bool check_others(int func)
@@ -262,12 +323,25 @@ bool check_others(int func)
 
   if(func != 2) //lock it check
   {
+
+    int valSw1 = digitalRead(lockSw1);
+    int valSw2 = digitalRead(lockSw2);
+
+    if(valSw1 == 1 || valSw2 == 1)
+    {
+      return true;
+    }
+    
+    // need to get input from two switches. 
+    // if either are pressed, the user should fail
+
     
   }
 
-  if(func != 3)
+  if(func != 3) //answer it check
   {
     
   }
 
+  return false; // returns false if all three if loops pass eval checks
 }
