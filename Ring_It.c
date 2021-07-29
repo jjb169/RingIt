@@ -86,6 +86,11 @@ void setup()
 //entry loop
 void loop() 
 {
+  //make sure all lights are off
+  digitalWrite(redOut, LOW);
+  digitalWrite(blueOut, LOW);
+  digitalWrite(greenOut, LOW);
+  
   //read character being pressed on keypad
   char currKey = customKeypad.getKey();
   
@@ -102,35 +107,60 @@ void loop()
 //main game method/loop
 void game()
 {
+  //declare bool light here to reuse in this loop
+  bool light = false;
+  
   //for loop going to 99, break out and return if loss (?)
   for(int i  = 0; i < 100; i++)
   {
-    int num = 0; // = rand(0-3) idk how to generate a random number
-    //generate rand num 1 to 3
+    //blank the display to start each loop
+    blank();
+
+    //gen a number 1-3 to determine which task to issue
+    int num = random(1, 4); //generates a random number 1 to 3
     switch(num)
     {
       case 1:
-        //call function, if 1 returned, win, 0, fail (?)
-
+        //turn on blue light for this task
+        digitalWrite(blueOut, HIGH);
+        light = true;
         //call dial it function, returning a bool true for losing, false for winning
         loss = dial();
         //check loss bool
         if(loss)
         {
+          //if fail, turn off the light
+          digitalWrite(blueOut, LOW);
           endGame();
           return;
         }
         else
         {
-          score++;
-          timeOut = timeOut - decreaseTime;
+          score++; //increase the player score
+          timeOut = timeOut - decreaseTime; //decrease time to complete a task
+
+          //set to flick the LED on and off
+          for(int i=0;i<10;i++)
+          {
+            //if light is on, turn it off and switch the bool
+            if(light == true)
+            {
+               digitalWrite(blueOut, LOW);
+               light = false;
+            }
+            else
+            {
+              digitalWrite(blueOut, HIGH);
+              light = true;
+            }
+          }
         }
        
        break;
       case 2:
         //call function, if 1 returned, win, 0, fail (?)
         digitalWrite(redOut, HIGH);
-        bool light = true;
+        light = true;
         loss = lock();
         //check loss bool
         if(loss)
@@ -143,6 +173,7 @@ void game()
         else
         {
           score++;
+          timeOut = timeOut - decreaseTime; //decrease time to complete a task
           //set to flick the LED on and off
           for(int i=0;i<10;i++)
           {
@@ -180,6 +211,8 @@ void endGame()
   digitalWrite(blueOut, HIGH);
 
   // 
+
+  //gonna need to add more here to display score and such *****************
  
 }
 
@@ -225,6 +258,12 @@ int dial()
       currDigit++; //move to next character
     else if(currKey != NO_KEY) //if key other than expected was pressed
       return true; //return true as the incorrect button was pressed and game is lost
+
+    //check if the user did the incorrect task
+    if(check_others(1))
+    {
+      return true;//game over. The user performed the wrong task
+    }
     
     //update curr time
     currTime = millis() / 1000.0; //millimeters, so going to divide by 1000
@@ -253,7 +292,7 @@ int lock()
     {
       return false;
     }
-    if(check_others())
+    if(check_others(2))
     {
       return true;//game over. The user performed the wrong task
     }
@@ -311,4 +350,15 @@ bool check_others(int func)
   }
 
   return false; // returns false if all three if loops pass eval checks
+}
+
+//helper function for blanking the display
+void blank()
+{
+  //put blank things on display
+  alpha4.writeDigitAscii(0, ' ');
+  alpha4.writeDigitAscii(1, ' ');
+  alpha4.writeDigitAscii(2, ' ');
+  alpha4.writeDigitAscii(3, ' ');
+  alpha4.writeDisplay(); //MUST CALL THIS TO WRITE TO DISPLAY
 }
