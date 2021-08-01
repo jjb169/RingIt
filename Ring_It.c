@@ -80,6 +80,7 @@ void setup()
   pinMode(sdSck, INPUT); //may need changing
 
   Serial.begin(9600);
+  alpha4.begin(0x70); //zach added this line - needed to initialize display
 }
 
 
@@ -218,7 +219,7 @@ void endGame()
 
 
 //method for dial
-int dial()
+bool dial()
 {
   //generate the 4 random numbers
   int randOne = random(0, 10); //generates a random number 0 to 9
@@ -226,7 +227,7 @@ int dial()
   int randThree = random(0, 10); //generates a random number 0 to 9
   int randFour = random(0, 10); //generates a random number 0 to 9
   //need these random ints in char format to display properly
-  char randChars[4] = {(char) randOne, (char) randTwo, (char) randThree, (char) randFour};
+  char randChars[4] = {randOne+48, randTwo+48, randThree+48, randFour+48}; // zach changed this line - need to add 48 to convert int to proper ascii char
 
   //put these numbers on the display
   alpha4.writeDigitAscii(0, randChars[0]);
@@ -276,7 +277,7 @@ int dial()
 
 
 //method for lock
-int lock()
+bool lock()
 {
   
   currTime = millis() / 1000.0; //millimeters, so going to divide by 1000
@@ -309,7 +310,7 @@ int lock()
 
 
 //method for answer
-int answer()
+bool answer()
 {
 
 }
