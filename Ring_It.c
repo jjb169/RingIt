@@ -132,7 +132,7 @@ void game()
         {
           //if fail, turn off the light
           digitalWrite(blueOut, LOW);
-          endGame();
+          endGame(score);
           return;
         }
         else
@@ -141,7 +141,7 @@ void game()
           timeOut = timeOut - decreaseTime; //decrease time to complete a task
 
           //set to flick the LED on and off
-          for(int i=0;i<10;i++)
+          for(int i=0;i<11;i++)
           {
             //if light is on, turn it off and switch the bool
             if(light == true)
@@ -168,15 +168,15 @@ void game()
         {
           digitalWrite(redOut, LOW);//turn light off
           //light
-          endGame();
+          endGame(score);
           return;
         }
         else
         {
           score++;
           timeOut = timeOut - decreaseTime; //decrease time to complete a task
-          //set to flick the LED on and off
-          for(int i=0;i<10;i++)
+          //set to flick the LED on and off. ends off
+          for(int i=0;i<11;i++)
           {
             //if light is on, turn it off and switch the bool
             if(light == true)
@@ -195,25 +195,99 @@ void game()
       break;
       case 3:
         //call function, if 1 returned, win, 0, fail (?)
+
+        //turn on green light for answer it
+        digitalWrite(greenOut, HIGH);
+        light = true;
+        //call answer it function, returning a bool true for losing, false for winning
+        loss = answer();
+
+        //check loss bool
+        if(loss)
+        {
+          //if fail, turn off the light
+          digitalWrite(greenOut, LOW);
+          endGame(score);
+          return;
+        }
+        else
+        {
+          score++;//increase the player's score by 1
+          timeOut = timeOut - decreaseTime;
+
+          //set to flick the LED on and off. ends off
+          for(int i=0;i<11;i++)
+          {
+            //if light is on, turn it off and flip bool
+            if(light)
+            {
+              digitalWrite(greenOut, LOW);
+              light =false;
+            }
+            else //if light is off, turn it on and flip bool
+            {
+              digitalWrite(greenOut, HIGH);
+              light = true;
+            }
+          }
+        }
+            
       break;
     }
   }
   //win or game over
-  endGame();
+  endGame(score);
 }
 
 
 //end game func for display/sound/light
-void endGame()
+void endGame(int score)
 {
-  // turn on purple light to indicate failure 
+  
+  char dispScore[2];
+  int tensDigit;
+  int onesDigit;
+  blank();
+  // compare score to 10. If it's less, then it will only take up one of the 4 displays
+  if(score<10)
+  {
+    dispScore[0] = (char)score;//the score is from 0-9, so the score can go right into dispScore
+    dispScore[1] = ' '; // this is just to fill out the array. blank char
+  }
+  else if(score < 100) //the max score is 99, but in case there's a leak/math error, this will allow only 10-99 to be displayed. If over 99, nothing will be displayed
+  {
+    tensDigit = score/10; //dividing an int by an int gives an int, so dividing a 2 digit number by 10 will give the tens digit
+    onesDigit = score % 10; //modulus to get the remainder of score/10. This gets the ones digit
 
-  digitalWrite(redOut, HIGH);
-  digitalWrite(blueOut, HIGH);
+    dispScore[0] = (char) onesDigit; //convert to char
+    dispScore[1] = (char) tensDigit; //convert to char
+  }
 
-  // 
+  //now the score is saved in dispScore as characters. Now the final score will be displayed
+  //if they won, display special lights
+  if(score == 99)
+  {
+    //display victory blue-green
+    digitalWrite(greenOut, HIGH);
+    digitalWrite(blueOut, HIGH);
+    //display final score (should be 99)
+    alpha4.writeDigitAscii(3, dispScore[0]); //switch to 3 if code is backwards
+    alpha4.writeDigitAscii(2, dispScore[1]); //switch to 2 if code is backwards
+    alpha4.writeDisplay();
+  }
+  else
+  {
+    //if the score were not 99, then the user lost
+    //display loser lights - purple
+    digitalWrite(blueOut, HIGH);
+    digitalWrite(redOut, HIGH);
+    //display final score
+    alpha4.writeDigitAscii(3, dispScore[0]);
+    alpha4.writeDigitAscii(2, dispScore[1]);
+    alpha4.writeDisplay();
+  }
 
-  //gonna need to add more here to display score and such *****************
+ 
  
 }
 
