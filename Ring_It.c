@@ -292,7 +292,7 @@ void endGame(int score)
 
 
 //method for dial
-int dial()
+bool dial()
 {
   //generate the 4 random numbers
   int randOne = random(0, 10); //generates a random number 0 to 9
@@ -350,7 +350,7 @@ int dial()
 
 
 //method for lock
-int lock()
+bool lock()
 {
   
   currTime = millis() / 1000.0; //millimeters, so going to divide by 1000
@@ -383,7 +383,7 @@ int lock()
 
 
 //method for answer
-int answer()
+bool answer()
 {
 
 }
