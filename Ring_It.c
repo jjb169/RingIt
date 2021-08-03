@@ -28,9 +28,9 @@ int greenOut = A3;
 //display CLK - pin 28 - A5
 //int dispClk = A5;
 //lock it SW1 - pin 2 - D0
-int lockSw1 = 0;
+int lockIt = 0;
 //lock it SW2 - pin 3 - D1
-int lockSw2 = 1;
+//int lockSw2 = 1;
 
 //speaker PWM output - pin 16 - D10
 int speakerOut = 10;
@@ -44,8 +44,8 @@ int sdSck = 13;
 //score, timer, rounds, and loss boolean
 int score = 0;
 unsigned long currTime = 0;
-int timeOut = 8; //start at 8 second timer
-int decreaseTime = 0.05; //decrease timer by 0.05 seconds every successful round
+unsigned long timeOut = 7; //start at 8 second timer
+unsigned long decreaseTime = 0.05; //decrease timer by 0.05 seconds every successful round
 //int rounds = 0;
 bool loss = false;
 
@@ -79,8 +79,8 @@ void setup()
   pinMode(blueOut, OUTPUT);
   pinMode(redOut, OUTPUT);
   pinMode(greenOut, OUTPUT);
-  pinMode(lockSw1, INPUT);
-  pinMode(lockSw2, INPUT);
+  pinMode(lockIt, INPUT);
+  //pinMode(lockSw2, INPUT_PULLUP);
   pinMode(speakerOut, OUTPUT);
   pinMode(sdMosi, INPUT); //may need changing
   pinMode(sdMiso, INPUT); //may need changing
@@ -98,6 +98,7 @@ bool first = true;
 //entry loop
 void loop()
 {
+ 
   //if first time in loop, check SD card
   if(first)
   {
@@ -133,12 +134,19 @@ void loop()
   digitalWrite(blueOut, LOW);
   digitalWrite(greenOut, LOW);
 
+  //display final score
+  alpha4.writeDigitAscii(0, 'P');
+  alpha4.writeDigitAscii(1, 'R');
+  alpha4.writeDigitAscii(2, 'S');
+  alpha4.writeDigitAscii(3, '#');
+  alpha4.writeDisplay();
+
   //read character being pressed on keypad
   char currKey = customKeypad.getKey();
 
   //reset score, time, rounds, loss boolean
   score = 0;
-  timeOut = 8;
+  timeOut = 7;
   //rounds = 0;
   loss = false;
   if (currKey == '#')
@@ -155,11 +163,11 @@ void game()
 
   //for loop going to 99, break out and return if loss (?)
   for (int i  = 0; i < 100; i++)
-  {
+  {    
     //blank the display to start each loop
     blank();
 
-    randomSeed(analogRead(3));
+    randomSeed(millis() * analogRead(3));
 
     //gen a number 1-3 to determine which task to issue
     int num = random(1, 4); //generates a random number 1 to 3
@@ -176,32 +184,6 @@ void game()
         {
           //if fail, turn off the light
           digitalWrite(blueOut, LOW);
-          /*
-            // compare score to 10. If it's less, then it will only take up one of the 4 displays
-            char dispScore[2];
-            int tensDigit;
-            int onesDigit;
-            if (score < 10)
-            {
-            dispScore[0] = score + 48;//the score is from 0-9, so the score can go right into dispScore
-            dispScore[1] = ' '; // this is just to fill out the array. blank char
-            }
-            else if (score < 100) //the max score is 99, but in case there's a leak/math error, this will allow only 10-99 to be displayed. If over 99, nothing will be displayed
-            {
-            tensDigit = score / 10; //dividing an int by an int gives an int, so dividing a 2 digit number by 10 will give the tens digit
-            onesDigit = score % 10; //modulus to get the remainder of score/10. This gets the ones digit
-
-            dispScore[0] = onesDigit + 48; //convert to char
-            dispScore[1] = tensDigit + 48; //convert to char
-            }
-            //display final score
-            alpha4.writeDigitAscii(3, dispScore[0]);
-            alpha4.writeDigitAscii(2, dispScore[1]);
-            alpha4.writeDigitAscii(1, '-');
-            alpha4.writeDigitAscii(0, 'S');
-            alpha4.writeDisplay();
-            delay(500);
-          */
           endGame(score);
           return;
         }
@@ -224,7 +206,7 @@ void game()
               digitalWrite(blueOut, HIGH);
               light = true;
             }
-            delay(1);
+            delay(10);
           }
         }
 
@@ -238,33 +220,6 @@ void game()
         if (loss)
         {
           digitalWrite(redOut, LOW);//turn light off
-          /*
-            //light
-            // compare score to 10. If it's less, then it will only take up one of the 4 displays
-            char dispScore[2];
-            int tensDigit;
-            int onesDigit;
-            if (score < 10)
-            {
-            dispScore[0] = score + 48;//the score is from 0-9, so the score can go right into dispScore
-            dispScore[1] = ' '; // this is just to fill out the array. blank char
-            }
-            else if (score < 100) //the max score is 99, but in case there's a leak/math error, this will allow only 10-99 to be displayed. If over 99, nothing will be displayed
-            {
-            tensDigit = score / 10; //dividing an int by an int gives an int, so dividing a 2 digit number by 10 will give the tens digit
-            onesDigit = score % 10; //modulus to get the remainder of score/10. This gets the ones digit
-
-            dispScore[0] = onesDigit + 48; //convert to char
-            dispScore[1] = tensDigit + 48; //convert to char
-            }
-            //display final score
-            alpha4.writeDigitAscii(3, dispScore[0]);
-            alpha4.writeDigitAscii(2, dispScore[1]);
-            alpha4.writeDigitAscii(1, '-');
-            alpha4.writeDigitAscii(0, 'S');
-            alpha4.writeDisplay();
-            delay(500);
-          */
           endGame(score);
           return;
         }
@@ -286,7 +241,7 @@ void game()
               digitalWrite(redOut, HIGH);
               light = true;
             }
-            delay(1);
+            delay(10);
           }
         }
 
@@ -312,22 +267,22 @@ void game()
           score++;//increase the player's score by 1
           timeOut = timeOut - decreaseTime;
 
-          //set to flick the LED on and off. ends off
-          for(int i=0;i<11;i++)
-          {
-            //if light is on, turn it off and flip bool
-            if(light)
+            //set to flick the LED on and off. ends off
+            for(int i=0;i<11;i++)
             {
-              digitalWrite(greenOut, LOW);
-              light =false;
+              //if light is on, turn it off and flip bool
+              if(light)
+              {
+                digitalWrite(greenOut, LOW);
+                light =false;
+              }
+              else //if light is off, turn it on and flip bool
+              {
+                digitalWrite(greenOut, HIGH);
+                light = true;
+              }
+              delay(10);
             }
-            else //if light is off, turn it on and flip bool
-            {
-              digitalWrite(greenOut, HIGH);
-              light = true;
-            }
-            delay(1);
-          }
           }
         
 
@@ -349,8 +304,9 @@ void endGame(int score)
   alpha4.writeDigitAscii(0, 'E');
   alpha4.writeDigitAscii(1, 'N');
   alpha4.writeDigitAscii(2, 'D');
+  alpha4.writeDigitAscii(3, ' ');
   alpha4.writeDisplay(); //MUST CALL THIS TO WRITE TO DISPLAY
-  delay(500);
+  delay(2000);
 
 
   // compare score to 10. If it's less, then it will only take up one of the 4 displays
@@ -361,31 +317,43 @@ void endGame(int score)
   {
     dispScore[0] = score + 48;//the score is from 0-9, so the score can go right into dispScore
     dispScore[1] = ' '; // this is just to fill out the array. blank char
+    //display final score
+    alpha4.writeDigitAscii(3, dispScore[0]);
+    alpha4.writeDigitAscii(2, dispScore[1]);
+    alpha4.writeDigitAscii(1, '-');
+    alpha4.writeDigitAscii(0, 'S');
+    alpha4.writeDisplay();
   }
-  else if (score < 100) //the max score is 99, but in case there's a leak/math error, this will allow only 10-99 to be displayed. If over 99, nothing will be displayed
+  else if (score < 99) //the max score is 99, but in case there's a leak/math error, this will allow only 10-99 to be displayed. If over 99, nothing will be displayed
   {
     tensDigit = score / 10; //dividing an int by an int gives an int, so dividing a 2 digit number by 10 will give the tens digit
     onesDigit = score % 10; //modulus to get the remainder of score/10. This gets the ones digit
 
     dispScore[0] = onesDigit + 48; //convert to char
     dispScore[1] = tensDigit + 48; //convert to char
-  }
-  //display final score
-  /*
+    //display final score
     alpha4.writeDigitAscii(3, dispScore[0]);
     alpha4.writeDigitAscii(2, dispScore[1]);
     alpha4.writeDigitAscii(1, '-');
     alpha4.writeDigitAscii(0, 'S');
-
     alpha4.writeDisplay();
-  */
+  }
+
   //now the score is saved in dispScore as characters. Now the final score will be displayed
   //if they won, display special lights
-  if (score == 99)
+  if (score >= 99)
   {
+    //display final score
+    alpha4.writeDigitAscii(3, '9');
+    alpha4.writeDigitAscii(2, '9');
+    alpha4.writeDigitAscii(1, '-');
+    alpha4.writeDigitAscii(0, 'S');
+    alpha4.writeDisplay();
     //display victory blue-green
     digitalWrite(greenOut, HIGH);
     digitalWrite(blueOut, HIGH);
+    //play sound
+    tmrpcm.play("Victory.wav");
   }
   else
   {
@@ -393,15 +361,12 @@ void endGame(int score)
     //display loser lights - purple
     digitalWrite(blueOut, HIGH);
     digitalWrite(redOut, HIGH);
-
+    //play sound
+    tmrpcm.play("FailIt.wav");
   }
 
-  //display final score
-  alpha4.writeDigitAscii(3, dispScore[0]);
-  alpha4.writeDigitAscii(2, dispScore[1]);
-  alpha4.writeDigitAscii(1, '-');
-  alpha4.writeDigitAscii(0, 'S');
-  alpha4.writeDisplay();
+  delay(5000); //wait 5 sec before restarting game
+
 }
 
 
@@ -422,7 +387,7 @@ bool dial()
   alpha4.writeDigitAscii(3, 'L');
   alpha4.writeDisplay(); //MUST CALL THIS TO WRITE TO DISPLAY
 
-  randomSeed(analogRead(0));
+  randomSeed(millis() * analogRead(3));
 
   //generate the 4 random numbers
   int randOne = random(0, 10); //generates a random number 0 to 9
@@ -444,7 +409,9 @@ bool dial()
 
   //grab the time at which this task is starting
   currTime = millis() / 1000; //millimeters, so going to divide by 1000
-  int gameOver = currTime + timeOut; //2 + 8 -> 10
+  unsigned long gameOver = currTime + timeOut + 1.5; //2 + 8 -> 10
+  //need grace period between functions to ensure pressing "Lock it" or other buttons does not result in immediate failure of following task
+  unsigned long grace = currTime + .5; //give 0.5 sec grace period between presses
 
   //just stay in a while loop until the task is completed, or the user fails
   while (true)
@@ -468,13 +435,18 @@ bool dial()
       }
       alpha4.writeDisplay(); //MUST CALL THIS TO WRITE TO DISPLAY
     }
-    else if (currKey != NO_KEY) //if key other than expected was pressed
-      return true; //return true as the incorrect button was pressed and game is lost
-
-    //check if the user did the incorrect task
-    if (check_others(1))
+    else if (currKey != NO_KEY && currTime > grace) //if key other than expected was pressed
     {
-      //return true;//game over. The user performed the wrong task
+      return true; //return true as the incorrect button was pressed and game is lost
+    }
+
+    //check if the user did the incorrect task - if outside of grace period
+    if(currTime > grace)
+    {
+      if (check_others(1))
+      {
+        return true;//game over. The user performed the wrong task
+      }
     }
 
     //update curr time
@@ -500,23 +472,29 @@ bool lock()
   alpha4.writeDisplay(); //MUST CALL THIS TO WRITE TO DISPLAY
 
 
+  //grab the time at which this task is starting
   currTime = millis() / 1000; //millimeters, so going to divide by 1000
-  int gameOver = currTime + timeOut; //2 + 8 -> 10
+  unsigned long gameOver = currTime + timeOut; //2 + 8 -> 10
+  //need grace period between functions to ensure pressing "Lock it" or other buttons does not result in immediate failure of following task
+  unsigned long grace = currTime + .5; //give 0.5 sec grace period between presses
 
   //just stay in a while loop until the task is completed, or the user fails
   while (true)
   {
-    int valSw1 = digitalRead(lockSw1);
-    int valSw2 = digitalRead(lockSw2);
+    int valSw = digitalRead(lockIt);
 
-    if (valSw1 == HIGH && valSw2 == HIGH)
+    if (valSw == HIGH && currTime > grace)
     {
       return false;
     }
 
-    if (check_others(2))
+    //check if the user did the incorrect task - if outside of grace period
+    if(currTime > grace)
     {
-      return true;//game over. The user performed the wrong task
+      if (check_others(2))
+      {
+        return true;//game over. The user performed the wrong task
+      }
     }
 
     //grab the time at which this task is starting
@@ -535,7 +513,7 @@ bool lock()
 bool answer()
 {
   //play sound
- // tmrpcm.play("AnswerIt.wav");
+  tmrpcm.play("AnswerIt.wav");
 
   alpha4.writeDigitAscii(0, 'C');
   alpha4.writeDigitAscii(1, 'A');
@@ -544,8 +522,11 @@ bool answer()
   alpha4.writeDisplay(); //MUST CALL THIS TO WRITE TO DISPLAY
 
 
+  //grab the time at which this task is starting
   currTime = millis() / 1000; //millimeters, so going to divide by 1000
-  int gameOver = currTime + timeOut; //2 + 8 -> 10
+  unsigned long gameOver = currTime + timeOut; //2 + 8 -> 10
+  //need grace period between functions to ensure pressing "Lock it" or other buttons does not result in immediate failure of following task
+  unsigned long grace = currTime + .5; //give 0.5 sec grace period between presses
 
   while(true)
   {
@@ -553,15 +534,18 @@ bool answer()
     int valMic = digitalRead(micIn);
 
     //active low, so check if LOW signal
-    if(valMic == LOW)
+    if(valMic == LOW && currTime > grace)
     {
       return false; //return false to indicate success
     }
 
-    //check if other tasks were performed instead
-    if (check_others(2))
+    //check if the user did the incorrect task - if outside of grace period
+    if(currTime > grace)
     {
-      return true;//game over. The user performed the wrong task
+      if (check_others(3))
+      {
+        return true;//game over. The user performed the wrong task
+      }
     }
 
     //grab the time at which this task is starting
@@ -572,31 +556,6 @@ bool answer()
       return true; //game over
     }
  
-    /*
-    if(valMic == HIGH)
-    {
-      alpha4.writeDigitAscii(0, 'H');
-      alpha4.writeDigitAscii(1, 'I');
-      alpha4.writeDigitAscii(2, 'G');
-      alpha4.writeDigitAscii(3, 'H');
-      alpha4.writeDisplay(); //MUST CALL THIS TO WRITE TO DISPLAY
-      digitalWrite(greenOut, HIGH);
-      digitalWrite(redOut, LOW);
-      digitalWrite(blueOut, LOW);
-    }
-    else if(valMic == LOW)
-    {
-      alpha4.writeDigitAscii(0, 'L');
-      alpha4.writeDigitAscii(1, 'O');
-      alpha4.writeDigitAscii(2, 'W');
-      alpha4.writeDigitAscii(3, ' ');
-      alpha4.writeDisplay(); //MUST CALL THIS TO WRITE TO DISPLAY
-      digitalWrite(greenOut, LOW);
-      digitalWrite(redOut, HIGH);
-      digitalWrite(blueOut, LOW);
-      delay(1000);
-    }
-    */    
   }
 }
 
@@ -614,16 +573,17 @@ bool check_others(int func)
 
     //check if a key was pressed
     if (currKey != NO_KEY)
+    {
       return true; //if key pressed when it shouldn't be, return true, meaning the game is lost
+    }
   }
 
   if (func != 2) //lock it check
   {
 
-    int valSw1 = digitalRead(lockSw1);
-    int valSw2 = digitalRead(lockSw2);
+    int valSw = digitalRead(lockIt);
 
-    if (valSw1 == HIGH || valSw2 == HIGH)
+    if (valSw == HIGH)
     {
       return true;
     }
